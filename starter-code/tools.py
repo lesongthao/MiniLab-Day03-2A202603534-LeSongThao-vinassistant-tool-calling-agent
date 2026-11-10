@@ -97,12 +97,51 @@ def submit_support_ticket(
 
 # ---------------------------------------------------------------------------
 # TOOL_DEFINITIONS — JSON Schemas mô tả cho LLM
-# TODO: Định nghĩa JSON Schema cho từng tool (name, description, parameters).
 # ---------------------------------------------------------------------------
 
 TOOL_DEFINITIONS = [
-    # TODO: Thêm schema cho "search_product_catalog"
-    # TODO: Thêm schema cho "submit_support_ticket"
+    {
+        "name": "search_product_catalog",
+        "description": "Tra cứu sản phẩm/dịch vụ Vingroup theo danh mục và giá tối đa.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "description": "Loại sản phẩm: 'xe_dien' hoặc 'du_lich'.",
+                    "enum": ["xe_dien", "du_lich"]
+                },
+                "max_price": {
+                    "type": "integer",
+                    "description": "Giá tối đa tính bằng VNĐ."
+                }
+            },
+            "required": ["category"]
+        }
+    },
+    {
+        "name": "submit_support_ticket",
+        "description": "Ghi nhận yêu cầu hỗ trợ của khách hàng vào hệ thống ticket.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "customer_name": {
+                    "type": "string",
+                    "description": "Tên khách hàng."
+                },
+                "issue_description": {
+                    "type": "string",
+                    "description": "Mô tả vấn đề cần hỗ trợ."
+                },
+                "priority": {
+                    "type": "string",
+                    "description": "Mức độ ưu tiên ('low', 'medium', 'high').",
+                    "enum": ["low", "medium", "high"]
+                }
+            },
+            "required": ["customer_name", "issue_description"]
+        }
+    }
 ]
 
 
