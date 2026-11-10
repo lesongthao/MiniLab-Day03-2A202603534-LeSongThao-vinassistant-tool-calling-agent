@@ -7,7 +7,6 @@ RAW_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "raw-data")
 
 # ---------------------------------------------------------------------------
 # Tool #1: search_product_catalog
-# TODO: Hoàn thiện hàm này — đọc file product_catalog.json, lọc theo category và max_price.
 # ---------------------------------------------------------------------------
 
 def search_product_catalog(category: str, max_price: int = 999999999999) -> List[Dict[str, Any]]:
@@ -22,14 +21,23 @@ def search_product_catalog(category: str, max_price: int = 999999999999) -> List
         Danh sách sản phẩm phù hợp điều kiện.
     """
     catalog_file = os.path.join(RAW_DATA_DIR, "product_catalog.json")
-    # TODO: Kiểm tra file tồn tại, đọc JSON, lọc sản phẩm
-    # Gợi ý: Lọc theo p["category"] == category AND p["price_vnd"] <= max_price
-    return []
+    if not os.path.exists(catalog_file):
+        return []
+
+    with open(catalog_file, "r", encoding="utf-8") as f:
+        products = json.load(f)
+
+    # Lọc sản phẩm theo category + max_price
+    results = [
+        p for p in products
+        if p.get("category", "").lower() == category.lower()
+        and p.get("price_vnd", 0) <= max_price
+    ]
+    return results
 
 
 # ---------------------------------------------------------------------------
 # Tool #2: submit_support_ticket
-# TODO: Hoàn thiện hàm này — tạo ticket mới và lưu vào support_tickets.json.
 # ---------------------------------------------------------------------------
 
 def submit_support_ticket(
@@ -49,9 +57,42 @@ def submit_support_ticket(
         Thông tin ticket vừa tạo bao gồm ticket_id, status.
     """
     tickets_file = os.path.join(RAW_DATA_DIR, "support_tickets.json")
-    # TODO: Load existing tickets, generate new ticket_id, append new ticket, save file
-    # Gợi ý: ticket_id = f"TK-{today}-{seq:03d}" với today = datetime.now().strftime("%Y%m%d")
-    return {"ticket_id": "TODO", "status": "TODO"}
+
+    existing_tickets = []
+    if os.path.exists(tickets_file):
+        with open(tickets_file, "r", encoding="utf-8") as f:
+            try:
+                existing_tickets = json.load(f)
+            except Exception:
+                existing_tickets = []
+
+    # Generate ticket ID
+    today = datetime.now().strftime("%Y%m%d")
+    seq = len(existing_tickets) + 1
+    ticket_id = f"TK-{today}-{seq:03d}"
+
+    # Create & save new ticket
+    new_ticket = {
+        "ticket_id": ticket_id,
+        "customer_name": customer_name,
+        "issue_description": issue_description,
+        "priority": priority.lower(),
+        "status": "open",
+        "created_at": datetime.now().isoformat() + "+07:00",
+        "category": "general"
+    }
+    existing_tickets.append(new_ticket)
+
+    with open(tickets_file, "w", encoding="utf-8") as f:
+        json.dump(existing_tickets, f, indent=2, ensure_ascii=False)
+
+    return {
+        "ticket_id": ticket_id,
+        "customer_name": customer_name,
+        "priority": priority.lower(),
+        "status": "open",
+        "message": f"Ticket {ticket_id} đã được tạo thành công."
+    }
 
 
 # ---------------------------------------------------------------------------
