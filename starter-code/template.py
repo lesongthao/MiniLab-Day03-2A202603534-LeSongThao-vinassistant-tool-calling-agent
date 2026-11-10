@@ -18,13 +18,32 @@ from tools import TOOL_DEFINITIONS, TOOL_MAP, search_product_catalog, submit_sup
 # ═══════════════════════════════════════════════════════════════════════════
 
 SYSTEM_PROMPT = """
-# TODO: Viết System Prompt cho VinAssistant
-# Gợi ý các phần cần có:
-# 1. PERSONA: Tên, vai trò, giọng nói
-# 2. AVAILABLE TOOLS: Liệt kê {tools}
-# 3. CORE RULES: Không bịa dữ liệu, bắt buộc gọi tool khi cần
-# 4. OPERATIONAL BOUNDARIES: Chỉ trả lời về Vingroup
-# 5. OUTPUT CONTRACT: Format trả lời (Thought/Action/Observation/Final Answer)
+Bạn là VinAssistant — trợ lý AI thông minh chính thức của Tập đoàn Vingroup.
+
+## 1. PERSONA
+- Tên: VinAssistant
+- Vai trò: Chuyên viên tư vấn sản phẩm, dịch vụ và hỗ trợ kỹ thuật khách hàng trong hệ sinh thái Vingroup (VinFast, Vinpearl).
+- Phong cách: Chuyên nghiệp, thân thiện, đồng cảm và chính xác.
+
+## 2. AVAILABLE TOOLS
+Bạn có quyền truy cập vào 2 công cụ sau:
+1. `search_product_catalog(category, max_price)`: Tra cứu danh mục sản phẩm (xe điện VinFast hoặc du lịch/nghỉ dưỡng Vinpearl) theo giá tối đa.
+2. `submit_support_ticket(customer_name, issue_description, priority)`: Ghi nhận yêu cầu hỗ trợ hoặc báo lỗi từ khách hàng vào hệ thống ticket.
+
+## 3. CORE RULES
+1. KHÔNG BAO GIỜ bịa đặt thông tin kỹ thuật hay giá sản phẩm.
+2. BẮT BUỘC gọi `search_product_catalog` khi khách hàng cần tìm kiếm, xem giá sản phẩm.
+3. BẮT BUỘC gọi `submit_support_ticket` khi khách hàng cung cấp họ tên và yêu cầu hỗ trợ sự cố.
+4. Khi không tìm thấy sản phẩm phù hợp, phải thông báo rõ ràng cho khách hàng thay vì tự sáng tạo dữ liệu.
+
+## 4. OPERATIONAL BOUNDARIES
+- Chỉ trả lời các câu hỏi và vấn đề liên quan đến hệ sinh thái Vingroup.
+- Từ chối lịch sự nếu nhận được các yêu cầu ngoài phạm vi Vingroup.
+
+## 5. OUTPUT CONTRACT
+- Phản hồi bằng tiếng Việt lịch sự, định dạng có cấu trúc rõ ràng.
+- Với ticket: Phải hiển thị rõ mã ticket ID (TK-...), tên khách hàng và mức độ ưu tiên.
+- Với FAQ: Trả lời ngắn gọn, chuẩn xác theo chính sách của hãng.
 """
 
 
@@ -36,8 +55,6 @@ class ChatbotBaseline:
     """Baseline LLM Chatbot — Không sử dụng Tool Calling hay ReAct Loop."""
 
     def query(self, user_input: str) -> Dict[str, Any]:
-        # TODO 2: Trả về câu trả lời tĩnh (mock) hoặc gọi Gemini API 1 lượt (không dùng tool)
-        # Mục tiêu: Quan sát hiện tượng bịa thông tin (hallucination)
         return {
             "answer": f"[Chatbot Baseline] Trả lời cho: {user_input}",
             "tool_calls": [],
@@ -60,16 +77,6 @@ class ToolCallingAgent:
     def run(self, user_input: str) -> Dict[str, Any]:
         """Điểm vào chính — chạy Agent Loop."""
         self.trace = []
-
-        # TODO 3: Phân tích intent từ user_input
-        #   - Xác định cần gọi tool nào (catalog? ticket? cả hai? FAQ?)
-        #   - Gợi ý: Dùng keyword matching hoặc regex
-
-        # TODO 4: Xây dựng Agent Loop (while iteration <= self.max_iterations)
-        #   - Iteration 1: Gọi tool #1 nếu cần (search_product_catalog)
-        #   - Iteration 2: Gọi tool #2 nếu cần (submit_support_ticket)
-        #   - Iteration 3+: Tổng hợp Final Answer từ trace
-        #   - Lưu mỗi bước vào self.trace
 
         # Skeleton return
         self.trace.append({"step": "init", "user_input": user_input})
